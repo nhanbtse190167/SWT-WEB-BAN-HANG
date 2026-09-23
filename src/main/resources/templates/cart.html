@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Giỏ hàng - LapZone</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col">
+    <div th:replace="~{fragments/header :: header}"></div>
+<!-- Main Content -->
+<main xmlns:th="http://www.thymeleaf.org"
+      class="flex-1 w-full max-w-[96%] mx-auto px-4 md:px-margin-desktop py-8 md:py-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
+    <!-- Cart Items Section -->
+    <section class="lg:col-span-8 space-y-6">
+        <!-- Alert Banners -->
+        <div th:if="${successMessage}"
+             class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg text-sm mb-4"
+             role="alert">
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}"
+             class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-sm mb-4" role="alert">
+            <span th:text="${errorMessage}"></span>
+        </div>
+        <h1 class="text-4xl font-black text-primary mb-8 tracking-tight uppercase">Giỏ hàng của bạn</h1>
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant overflow-hidden">
+            <!-- Giỏ hàng trống -->
+            <div th:if="${#lists.isEmpty(cart.cartItems)}"
+                 class="p-8 text-center text-on-surface-variant text-body-lg">
+                Giỏ hàng của bạn đang trống!
+            </div>
+
+            <!-- Lặp qua các Item trong giỏ hàng -->
+            <div th:each="item : ${cart.cartItems}"
+                 class="p-6 border-b border-outline-variant flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                <input type="checkbox"
+                       class="cart-item-checkbox w-5 h-5 text-primary bg-surface-container-low border-outline-variant rounded focus:ring-primary focus:ring-2 cursor-pointer"
+                       th:data-item-id="${item.cartItemId}"
+                       th:data-price="${item.configurationVersion.price * item.quantity}">
+                <div
+                        class="w-24 h-24 sm:w-32 sm:h-32 bg-surface-container-low rounded-lg p-2 flex-shrink-0 flex items-center justify-center">
+                    <img th:if="${item.configurationVersion.laptop != null and item.configurationVersion.laptop.imageUrl != null and !item.configurationVersion.laptop.imageUrl.isEmpty()}" th:src="${item.configurationVersion.laptop.imageUrl}" alt="Sản phẩm" class="object-contain max-w-full max-h-full" />
+                    <img th:unless="${item.configurationVersion.laptop != null and item.configurationVersion.laptop.imageUrl != null and !item.configurationVersion.laptop.imageUrl.isEmpty()}" alt="Sản phẩm" class="object-contain max-w-full max-h-full"
+                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNfgXG2VW3KuRQWjt275sT32q7JHz0Nsvm5HUO9_U9WCMo-XDPGLW9Cbj72ddo1riF9AJpoGAUKprUO2jUBwdx82ZmKImWh3Cxku6PgdWHfa8Gto8VysnPAaH7o7C-vC35TIYL-x0BakT9dtz3nHylD-7OIPMVKu27DIruMOf41uQSuG5LKa34EdS6AfvEplbd2K77UrqnlQzn5hiDwlg6PPzg8pWFeoA6Nqe4VxlH7ZO-1OOFmgiXiYiqs7gS5x-jy0KEIQC45dE" />
+                </div>
+                <div class="flex-1 w-full">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                                <span
+                                        class="text-label-sm font-label-sm text-primary uppercase tracking-wider mb-1 block"
+                                        th:text="${item.configurationVersion.laptop != null ? item.configurationVersion.laptop.brand.brandName : 'Laptops'}">Laptops</span>
+                            <h3 class="text-headline-md font-headline-md text-on-surface line-clamp-2"
+                                th:text="${(item.configurationVersion.laptop != null ? item.configurationVersion.laptop.laptopName : 'Laptop') + ' - ' + item.configurationVersion.cpu + ', ' + item.configurationVersion.ram + ', ' + item.configurationVersion.storage}">
+                                Dell XPS 15</h3>
+                        </div>
+                        <form th:action="@{/cart/remove}" method="POST" class="inline">
+                            <input type="hidden" name="itemId" th:value="${item.cartItemId}">
+                            <button type="submit"
+                                    class="text-on-surface-variant hover:text-error transition-colors p-1"
+                                    title="Xóa sản phẩm">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-4 gap-4">
+                        <!-- Nút cập nhật số lượng -->
+                        <div class="flex items-center border border-outline-variant rounded-lg bg-surface">
+                            <form th:action="@{/cart/update}" method="POST" class="flex items-center m-0 p-0">
+                                <input type="hidden" name="itemId" th:value="${item.cartItemId}">
+                                <button type="submit" name="action" value="decrease" aria-label="Decrease quantity"
+                                        class="px-3 py-1 text-on-surface hover:bg-surface-container-high transition-colors rounded-l-lg"
+                                        th:disabled="${item.quantity <= 1}">-</button>
+                                <input aria-label="Quantity" readonly
+                                       class="w-12 text-center border-none bg-transparent text-body-md font-body-md p-1 focus:ring-0 appearance-none m-0"
+                                       th:value="${item.quantity}" />
+                                <button type="submit" name="action" value="increase" aria-label="Increase quantity"
+                                        class="px-3 py-1 text-on-surface hover:bg-surface-container-high transition-colors rounded-r-lg"
+                                        th:disabled="${item.quantity >= item.configurationVersion.stockQuantity}">+</button>
+                            </form>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-headline-md font-headline-md text-primary font-bold"
+                                 th:text="${#numbers.formatDecimal(item.configurationVersion.price * item.quantity, 0, 'COMMA', 0, 'POINT') + ' ₫'}">
+                                45.990.000 ₫</div>
+                            <div class="text-label-sm font-label-sm text-on-surface-variant"
+                                 th:text="${item.quantity + ' x ' + #numbers.formatDecimal(item.configurationVersion.price, 0, 'COMMA', 0, 'POINT') + ' ₫'}">
+                                48.990.000 ₫</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center justify-between mt-6">
+            <a class="text-primary hover:text-tertiary-fixed-dim transition-colors text-label-md font-label-md flex items-center gap-2"
+               href="/home-page">
+                <span class="material-symbols-outlined text-sm">arrow_back</span>
+                Tiếp tục mua sắm
+            </a>
+            <form action="/cart/clear" method="post" class="m-0 p-0 inline">
+                <button type="submit" class="text-on-surface-variant hover:text-error transition-colors text-label-md font-label-md">
+                    Xóa tất cả
+                </button>
+            </form>
+        </div>
+    </section>
+    <!-- Order Summary Section -->
+    <aside class="lg:col-span-4 mt-8 lg:mt-0">
+        <div
+                class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-6 sticky top-24">
+            <h2 class="text-headline-md font-headline-md text-on-surface mb-6 border-b border-outline-variant pb-4">
+                Tóm tắt đơn hàng</h2>
+            <div class="space-y-4 text-body-md font-body-md text-on-surface-variant mb-6">
+                <div class="flex justify-between">
+                    <span>Tạm tính (<span id="selected-count">0</span> sản phẩm)</span>
+                    <span id="cart-subtotal" class="font-medium text-on-surface">0 ₫</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Phí vận chuyển</span>
+                    <span class="font-medium text-on-surface">Miễn phí</span>
+                </div>
+            </div>
+            <div class="border-t border-outline-variant pt-4 mb-6">
+                <div class="flex justify-between items-end mb-1">
+                    <span class="text-label-md font-label-md text-on-surface-variant">Tổng cộng</span>
+                    <span id="cart-total" class="text-headline-lg font-headline-lg text-primary font-bold">0
+                            ₫</span>
+                </div>
+                <div class="text-right text-label-sm font-label-sm text-on-surface-variant">(Đã bao gồm VAT)</div>
+            </div>
+            <form th:action="@{/orders/checkout}" method="POST" class="w-full m-0 p-0" id="checkoutForm">
+                <button type="submit"
+                        class="w-full bg-green-600 hover:bg-green-700 text-white font-headline-md text-headline-md py-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
+                    Đặt Hàng
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+            </form>
+            <div class="mt-6 flex flex-wrap justify-center gap-4 text-on-surface-variant opacity-70 grayscale">
+                <!-- Trust badges / Payment methods placeholders -->
+                <span class="material-symbols-outlined text-3xl" title="Thanh toán an toàn">security</span>
+                <span class="material-symbols-outlined text-3xl" title="Hỗ trợ trả góp">credit_card</span>
+                <span class="material-symbols-outlined text-3xl" title="Giao hàng nhanh">local_shipping</span>
+            </div>
+        </div>
+    </aside>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-900 text-gray-400 py-10 mt-auto">
+    <div class="max-w-[96%] w-full mx-auto px-4 flex flex-wrap justify-between items-center gap-6">
+        <div>
+            <div class="text-white font-extrabold text-xl mb-2 flex items-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                    <rect x="9" y="9" width="6" height="6"></rect>
+                    <line x1="9" y1="1" x2="9" y2="4"></line>
+                    <line x1="15" y1="1" x2="15" y2="4"></line>
+                    <line x1="9" y1="20" x2="9" y2="23"></line>
+                    <line x1="15" y1="20" x2="15" y2="23"></line>
+                    <line x1="20" y1="9" x2="23" y2="9"></line>
+                    <line x1="20" y1="14" x2="23" y2="14"></line>
+                    <line x1="1" y1="9" x2="4" y2="9"></line>
+                    <line x1="1" y1="14" x2="4" y2="14"></line>
+                </svg>
+                LapZone
+            </div>
+            <div class="text-[0.9rem]">&copy; 2024 LapZone Systems. All rights reserved. Precision Engineering for Professionals.</div>
+        </div>
+        <div class="flex gap-6 text-[0.9rem] font-medium">
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">Terms of Service</a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">Shipping Info</a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">Contact Support</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        function calculateTotal() {
+            // Phải lấy lại các phần tử mỗi lần tính vì DOM có thể đã bị thay mới bởi AJAX
+            const checkboxes = document.querySelectorAll('.cart-item-checkbox');
+            const subtotalElement = document.getElementById('cart-subtotal');
+            const totalElement = document.getElementById('cart-total');
+            const countElement = document.getElementById('selected-count');
+
+            let total = 0;
+            let count = 0;
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    total += parseFloat(cb.getAttribute('data-price'));
+                    count++;
+                }
+            });
+
+            const formattedTotal = new Intl.NumberFormat('vi-VN').format(total) + ' ₫';
+            if (subtotalElement) subtotalElement.textContent = formattedTotal;
+            if (totalElement) totalElement.textContent = formattedTotal;
+            if (countElement) countElement.textContent = count;
+        }
+
+        // Lắng nghe sự kiện change trên toàn bộ body (Event Delegation)
+        // để checkbox mới sinh ra vẫn hoạt động
+        document.body.addEventListener('change', function (e) {
+            if (e.target.matches('.cart-item-checkbox')) {
+                calculateTotal();
+            }
+        });
+
+        // Biến lưu nút submit được bấm (để phòng hờ e.submitter không được support trên một số trình duyệt)
+        let lastClickedSubmitter = null;
+        document.body.addEventListener('click', function (e) {
+            const btn = e.target.closest('button[type="submit"], input[type="submit"]');
+            if (btn) {
+                lastClickedSubmitter = btn;
+            }
+        });
+
+        // Xử lý sự kiện submit các form (cập nhật số lượng, xoá sản phẩm) bằng AJAX để không load lại trang
+        document.body.addEventListener('submit', async function (e) {
+            const form = e.target;
+            const action = form.getAttribute('action') || '';
+            if (action.includes('/orders/checkout')) {
+                e.preventDefault();
+                const selectedCheckboxes = document.querySelectorAll('.cart-item-checkbox:checked');
+                if (selectedCheckboxes.length === 0) {
+                    showModal('alertModal', 'alertModalContent');
+                    return false;
+                }
+                
+                showModal('checkoutConfirmModal', 'checkoutConfirmModalContent');
+                
+                document.getElementById('btnConfirmCheckout').onclick = function() {
+                    hideModal('checkoutConfirmModal', 'checkoutConfirmModalContent');
+                    
+                    form.querySelectorAll('input[name="selectedItemIds"]').forEach(el => el.remove());
+                    
+                    selectedCheckboxes.forEach(cb => {
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'selectedItemIds';
+                        hiddenInput.value = cb.getAttribute('data-item-id');
+                        form.appendChild(hiddenInput);
+                    });
+                    
+                    form.submit();
+                };
+                return false;
+            }
+
+            if (action.includes('/cart/update') || action.includes('/cart/remove') || action.includes('/cart/clear')) {
+                e.preventDefault(); // Ngăn trình duyệt load lại trang
+
+                const submitter = e.submitter || lastClickedSubmitter;
+                const formData = new FormData(form);
+                if (submitter && submitter.name) {
+                    formData.append(submitter.name, submitter.value);
+                }
+
+                // Chuyển FormData sang dạng URL-encoded để Spring Boot Controller (@RequestParam) đọc được chuẩn nhất
+                const urlEncodedData = new URLSearchParams(formData);
+
+                // Lưu trạng thái của các checkbox hiện tại để sau khi reload DOM tự động check lại
+                const checkedIds = Array.from(document.querySelectorAll('.cart-item-checkbox:checked'))
+                    .map(cb => cb.getAttribute('data-item-id'));
+
+                try {
+                    const response = await fetch(action, {
+                        method: form.getAttribute('method') || 'POST',
+                        body: urlEncodedData,
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        redirect: 'follow'
+                    });
+
+                    if (response.ok) {
+                        const html = await response.text();
+                        const doc = new DOMParser().parseFromString(html, 'text/html');
+
+                        const currentMain = document.querySelector('main');
+                        const newMain = doc.querySelector('main');
+
+                        if (currentMain && newMain) {
+                            // Cập nhật lại HTML giỏ hàng nhưng không tải lại trang
+                            currentMain.innerHTML = newMain.innerHTML;
+
+                            // Khôi phục lại trạng thái checked của các checkbox
+                            const newCheckboxes = document.querySelectorAll('.cart-item-checkbox');
+                            newCheckboxes.forEach(cb => {
+                                if (checkedIds.includes(cb.getAttribute('data-item-id'))) {
+                                    cb.checked = true;
+                                }
+                            });
+
+                            // Tính toán lại tiền
+                            calculateTotal();
+                        }
+                    }
+                } catch (error) {
+                    console.error("Lỗi:", error);
+                }
+            }
+        });
+
+        // Tính toán lần đầu
+        calculateTotal();
+    });
+</script>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <!-- Modals -->
+    <div id="checkoutConfirmModal" class="fixed inset-0 z-[200] hidden bg-black/50 flex items-center justify-center backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 transform scale-95 opacity-0 transition-all duration-200" id="checkoutConfirmModalContent">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Xác nhận thanh toán</h3>
+            <p class="text-gray-600 mb-6">Bạn có chắc chắn muốn thanh toán đơn hàng này không?</p>
+            <div class="flex justify-end gap-3">
+                <button type="button" id="btnCancelCheckout" class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors">Hủy</button>
+                <button type="button" id="btnConfirmCheckout" class="px-4 py-2 text-white bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-colors shadow-sm">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="alertModal" class="fixed inset-0 z-[200] hidden bg-black/50 flex items-center justify-center backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 transform scale-95 opacity-0 transition-all duration-200" id="alertModalContent">
+            <h3 class="text-xl font-bold text-red-600 mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined">warning</span> Thông báo
+            </h3>
+            <p class="text-gray-600 mb-6">Vui lòng chọn ít nhất một sản phẩm để thanh toán!</p>
+            <div class="flex justify-end">
+                <button type="button" id="btnCloseAlert" class="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors shadow-sm">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showModal(modalId, contentId) {
+            const modal = document.getElementById(modalId);
+            const content = document.getElementById(contentId);
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }
+        
+        function hideModal(modalId, contentId) {
+            const modal = document.getElementById(modalId);
+            const content = document.getElementById(contentId);
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        document.getElementById('btnCancelCheckout').addEventListener('click', () => {
+            hideModal('checkoutConfirmModal', 'checkoutConfirmModalContent');
+        });
+        document.getElementById('btnCloseAlert').addEventListener('click', () => {
+            hideModal('alertModal', 'alertModalContent');
+        });
+    </script>
+</body>
+
+</html>

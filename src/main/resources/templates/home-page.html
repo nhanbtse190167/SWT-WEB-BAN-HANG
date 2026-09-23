@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LapZone - Trang Chủ</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-gray-900 min-h-screen flex flex-col">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<!-- Main Content -->
+<main class="flex-1 pb-12">
+    <div class="max-w-[98%] w-full mx-auto px-4 pt-6">
+        <div class="grid grid-cols-1 lg:grid-cols-[240px_1fr_320px] xl:grid-cols-[240px_1fr_380px] gap-6 mb-6 items-start">
+            <!-- Sidebar Menu (Filter Form) -->
+            <aside class="hidden md:flex flex-col bg-white rounded-lg border border-gray-200 overflow-hidden self-start">
+                <form th:action="@{/home-page}" method="GET" class="flex flex-col w-full h-full">
+                    <!-- Header -->
+                    <div class="px-4 py-3 bg-slate-50 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-800 flex items-center gap-2 text-sm uppercase tracking-wide">
+                            Bộ lọc sản phẩm
+                        </h3>
+                        <a th:href="@{/home-page}" class="text-xs text-blue-500 hover:underline font-medium">Xóa lọc</a>
+                    </div>
+                    
+                    <div class="p-4 flex flex-col gap-6 overflow-y-auto max-h-[70vh]">
+                        <!-- Keyword -->
+                        <div th:if="${keyword != null}">
+                            <input type="hidden" name="keyword" th:value="${keyword}"/>
+                        </div>
+
+                        <!-- Danh mục -->
+                        <div class="flex flex-col gap-2">
+                            <h4 class="font-semibold text-sm text-gray-900">Danh mục</h4>
+                            <div class="flex flex-col gap-2 mt-1">
+                                <label class="flex items-center gap-2 cursor-pointer text-sm">
+                                    <input type="radio" name="categoryId" value="" class="text-blue-600 focus:ring-blue-500" th:checked="${selectedCategoryId == null}">
+                                    Tất cả
+                                </label>
+                                <label th:each="cat : ${categories}" class="flex items-center gap-2 cursor-pointer text-sm">
+                                    <input type="radio" name="categoryId" th:value="${cat.categoryId}" th:checked="${selectedCategoryId == cat.categoryId}" class="text-blue-600 focus:ring-blue-500">
+                                    <span th:text="${cat.categoryName}"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Thương hiệu -->
+                        <div class="flex flex-col gap-2">
+                            <h4 class="font-semibold text-sm text-gray-900">Thương hiệu</h4>
+                            <div class="flex flex-col gap-2 mt-1">
+                                <label class="flex items-center gap-2 cursor-pointer text-sm">
+                                    <input type="radio" name="brandId" value="" class="text-blue-600 focus:ring-blue-500" th:checked="${selectedBrandId == null}">
+                                    Tất cả
+                                </label>
+                                <label th:each="brand : ${brands}" class="flex items-center gap-2 cursor-pointer text-sm">
+                                    <input type="radio" name="brandId" th:value="${brand.brandId}" th:checked="${selectedBrandId == brand.brandId}" class="text-blue-600 focus:ring-blue-500">
+                                    <span th:text="${brand.brandName}"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Mức giá -->
+                        <div class="flex flex-col gap-2">
+                            <h4 class="font-semibold text-sm text-gray-900">Khoảng giá</h4>
+                            <div class="grid grid-cols-2 gap-2 mt-1">
+                                <input type="number" name="minPrice" th:value="${minPrice}" placeholder="Từ..." class="w-full text-sm rounded border-gray-300 focus:ring-blue-500 focus:border-blue-500 px-2 py-1.5">
+                                <input type="number" name="maxPrice" th:value="${maxPrice}" placeholder="Đến..." class="w-full text-sm rounded border-gray-300 focus:ring-blue-500 focus:border-blue-500 px-2 py-1.5">
+                            </div>
+                        </div>
+
+                        <!-- CPU -->
+                        <div class="flex flex-col gap-2" th:if="${cpus != null and !cpus.isEmpty()}">
+                            <h4 class="font-semibold text-sm text-gray-900">CPU</h4>
+                            <div class="flex flex-col gap-2 mt-1 max-h-32 overflow-y-auto pr-2">
+                                <label th:each="cpuOption : ${cpus}" class="flex items-center gap-2 cursor-pointer text-sm">
+                                    <input type="checkbox" name="cpu" th:value="${cpuOption}" th:checked="${selectedCpus != null and #lists.contains(selectedCpus, cpuOption)}" class="text-blue-600 focus:ring-blue-500 rounded">
+                                    <span th:text="${cpuOption}"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- RAM -->
+                        <div class="flex flex-col gap-2" th:if="${rams != null and !rams.isEmpty()}">
+                            <h4 class="font-semibold text-sm text-gray-900">RAM</h4>
+                            <div class="flex flex-col gap-2 mt-1 max-h-32 overflow-y-auto pr-2">
+                                <label th:each="ramOption : ${rams}" class="flex items-center gap-2 cursor-pointer text-sm">
+                                    <input type="checkbox" name="ram" th:value="${ramOption}" th:checked="${selectedRams != null and #lists.contains(selectedRams, ramOption)}" class="text-blue-600 focus:ring-blue-500 rounded">
+                                    <span th:text="${ramOption}"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Ổ cứng -->
+                        <div class="flex flex-col gap-2" th:if="${storages != null and !storages.isEmpty()}">
+                            <h4 class="font-semibold text-sm text-gray-900">Ổ cứng</h4>
+                            <div class="flex flex-col gap-2 mt-1 max-h-32 overflow-y-auto pr-2">
+                                <label th:each="storageOption : ${storages}" class="flex items-center gap-2 cursor-pointer text-sm">
+                                    <input type="checkbox" name="storage" th:value="${storageOption}" th:checked="${selectedStorages != null and #lists.contains(selectedStorages, storageOption)}" class="text-blue-600 focus:ring-blue-500 rounded">
+                                    <span th:text="${storageOption}"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Button Apply -->
+                    <div class="p-4 border-t border-gray-200 bg-slate-50">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm shadow-sm">
+                            Áp dụng bộ lọc
+                        </button>
+                    </div>
+                </form>
+            </aside>
+
+            <!-- MIDDLE COLUMN: Laptops List -->
+            <div class="flex flex-col min-w-0">
+                <!-- Products Section (Beside sidebar for search/category view) -->
+                <div class="mt-0" th:if="${isFiltering}">
+                    <h2 class="text-2xl font-extrabold mb-6 flex justify-between items-center text-gray-900">
+                            <span th:if="${keyword != null and !keyword.isEmpty()}" th:text="'Kết quả tìm kiếm cho: ' + ${keyword}">Danh Sách Laptop</span>
+                        <span th:if="${keyword == null or keyword.isEmpty()}">Danh Sách Sản Phẩm</span>
+                    </h2>
+
+                    <div th:if="${#lists.isEmpty(laptops)}"
+                         class="text-center p-12 bg-white rounded-lg border border-gray-200 text-gray-500">
+                        Không tìm thấy sản phẩm nào trong danh mục này.
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(laptops)}"
+                         class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        <div th:each="laptop : ${laptops}"
+                             class="bg-white border border-gray-200 rounded-lg p-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg cursor-pointer flex flex-col">
+                            <div class="h-40 bg-white rounded mb-4 flex items-center justify-center overflow-hidden">
+                                <img th:if="${laptop.imageUrl != null and !laptop.imageUrl.isEmpty()}" th:src="${laptop.imageUrl}" alt="Sản phẩm" class="object-contain w-full h-full p-2" />
+                                <svg th:unless="${laptop.imageUrl != null and !laptop.imageUrl.isEmpty()}" width="64" height="64" fill="none" stroke="#cbd5e1" stroke-width="1"
+                                     viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3 th:text="${laptop.laptopName}"
+                                class="font-bold text-lg mb-2 whitespace-nowrap overflow-hidden text-ellipsis text-gray-900">
+                                Tên Laptop</h3>
+                            <p class="text-sm text-gray-500 mb-4 line-clamp-2 h-10" th:text="${laptop.description}">Mô
+                                tả</p>
+
+                            <div class="mt-auto">
+                                <div class="font-extrabold text-red-500 text-lg mb-4">
+                                        <span
+                                                th:if="${laptop.configurationVersions != null and !laptop.configurationVersions.isEmpty()}"
+                                                th:text="${#numbers.formatDecimal(laptop.configurationVersions[0].price, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span>
+                                    <span
+                                            th:unless="${laptop.configurationVersions != null and !laptop.configurationVersions.isEmpty()}">Liên
+                                            hệ</span>
+                                </div>
+
+                                <div class="w-full">
+                                    <a th:href="@{/laptop/{id}(id=${laptop.laptopId})}"
+                                       class="block text-center bg-slate-200 text-slate-600 py-2 rounded-md font-semibold hover:bg-slate-300 transition-colors">Chi
+                                        tiết</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Section (Default view at bottom) -->
+                <div class="mt-0 mb-12" th:if="${!isFiltering and newPromotionalLaptops != null and !newPromotionalLaptops.isEmpty()}">
+                    <h2 class="text-2xl font-extrabold mb-6 flex justify-between items-center text-red-600 uppercase tracking-wide">
+                        Sản Phẩm Mới - Khuyến Mãi Hot
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        <div th:each="laptop : ${newPromotionalLaptops}"
+                             class="bg-white border-2 border-red-100 rounded-lg p-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(239,68,68,0.15)] cursor-pointer flex flex-col relative overflow-hidden">
+
+                            <div class="absolute top-3 right-3 bg-red-500 text-white text-xs font-black px-2 py-1 rounded shadow-md z-10">NEW</div>
+
+                            <div class="h-40 bg-white rounded mb-4 flex items-center justify-center relative overflow-hidden">
+                                <img th:if="${laptop.imageUrl != null and !laptop.imageUrl.isEmpty()}" th:src="${laptop.imageUrl}" alt="Sản phẩm" class="object-contain w-full h-full p-2" />
+                                <svg th:unless="${laptop.imageUrl != null and !laptop.imageUrl.isEmpty()}" width="64" height="64" fill="none" stroke="#fca5a5" stroke-width="1" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+
+                            <h3 th:text="${laptop.laptopName}" class="font-bold text-lg mb-2 whitespace-nowrap overflow-hidden text-ellipsis text-gray-900">Tên Laptop</h3>
+                            <p class="text-sm text-gray-500 mb-4 line-clamp-2 h-10" th:if="${laptop.category != null}" th:text="${laptop.category.categoryName}">Danh mục</p>
+
+                            <div class="mt-auto">
+                                <div class="w-full">
+                                    <a th:href="@{/laptop/{id}(id=${laptop.laptopId})}" class="block text-center border-2 border-red-500 text-red-500 py-2 rounded-md font-bold hover:bg-red-500 hover:text-white transition-colors shadow-sm">Mua ngay</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="mt-12 border-gray-200">
+                </div>
+                <div class="mt-0" th:if="${!isFiltering}">
+                    <h2 class="text-2xl font-extrabold mb-6 flex justify-between items-center text-gray-900">
+                        Danh Sách Laptop
+                    </h2>
+
+                    <div th:if="${#lists.isEmpty(laptops)}"
+                         class="text-center p-12 bg-white rounded-lg border border-gray-200 text-gray-500">
+                        Không tìm thấy sản phẩm nào trong danh mục này.
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(laptops)}"
+                         class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        <div th:each="laptop : ${laptops}"
+                             class="bg-white border border-gray-200 rounded-lg p-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg cursor-pointer flex flex-col">
+                            <div class="h-40 bg-white rounded mb-4 flex items-center justify-center overflow-hidden">
+                                <img th:if="${laptop.imageUrl != null and !laptop.imageUrl.isEmpty()}" th:src="${laptop.imageUrl}" alt="Sản phẩm" class="object-contain w-full h-full p-2" />
+                                <svg th:unless="${laptop.imageUrl != null and !laptop.imageUrl.isEmpty()}" width="64" height="64" fill="none" stroke="#cbd5e1" stroke-width="1"
+                                     viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3 th:text="${laptop.laptopName}"
+                                class="font-bold text-lg mb-2 whitespace-nowrap overflow-hidden text-ellipsis text-gray-900">
+                                Tên Laptop</h3>
+                            <p class="text-sm text-gray-500 mb-4 line-clamp-2 h-10" th:text="${laptop.description}">Mô tả
+                            </p>
+
+                            <div class="mt-auto">
+                                <div class="font-extrabold text-red-500 text-lg mb-4">
+                                        <span
+                                                th:if="${laptop.configurationVersions != null and !laptop.configurationVersions.isEmpty()}"
+                                                th:text="${#numbers.formatDecimal(laptop.configurationVersions[0].price, 0, 'COMMA', 0, 'POINT')} + ' ₫'"></span>
+                                    <span
+                                            th:unless="${laptop.configurationVersions != null and !laptop.configurationVersions.isEmpty()}">Liên
+                                            hệ</span>
+                                </div>
+
+                                <div class="w-full">
+                                    <a th:href="@{/laptop/{id}(id=${laptop.laptopId})}"
+                                       class="block text-center bg-slate-200 text-slate-600 py-2 rounded-md font-semibold hover:bg-slate-300 transition-colors">Chi
+                                        tiết</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- End of Middle Column -->
+
+            <!-- RIGHT COLUMN: Active Promotions -->
+            <aside class="hidden lg:flex flex-col self-start sticky top-24 w-full bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div class="bg-blue-50 border-b border-blue-100 py-3 px-4">
+                    <h3 class="font-bold text-blue-800 flex items-center gap-2 text-sm uppercase tracking-wide">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                        </svg>
+                        Mã Giảm Giá Hiện Tại
+                    </h3>
+                </div>
+                
+                <div class="p-4 flex flex-col gap-3 max-h-[75vh] overflow-y-auto styled-scroll">
+                    <!-- Dynamic Promotions List -->
+                    <div th:if="${activePromotions != null and !activePromotions.isEmpty()}" th:each="promo : ${activePromotions}"
+                         class="relative rounded border border-dashed border-blue-300 bg-white p-3 hover:border-blue-500 hover:bg-blue-50/30 transition-colors shadow-sm">
+                        
+                        <h4 class="text-sm font-bold text-gray-800 mb-1.5" th:text="${promo.title}">Tiêu Đề Khuyến Mãi</h4>
+                        
+                        <p class="text-[13px] text-gray-600 leading-relaxed">
+                            Nhập mã <strong class="font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded mx-1 select-all tracking-wider" th:text="${promo.couponCode}">CODE</strong> 
+                            giảm <span class="font-bold text-red-600" th:if="${promo.discountType == 'PERCENTAGE'}" th:text="${promo.discountValue} + '%'"></span><span class="font-bold text-red-600" th:if="${promo.discountType == 'FIXED_AMOUNT'}" th:text="${#numbers.formatDecimal(promo.discountValue, 0, 'COMMA', 0, 'POINT')} + 'đ'"></span><span th:if="${promo.minOrderValue != null}"> / đơn từ <span class="font-medium text-gray-900" th:text="${#numbers.formatDecimal(promo.minOrderValue, 0, 'COMMA', 0, 'POINT')} + 'đ'"></span></span>
+                        </p>
+                    </div>
+                    
+                    <div th:if="${activePromotions == null or activePromotions.isEmpty()}" class="text-center text-gray-400 text-sm py-4">
+                        Chưa có khuyến mãi nào
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.body.addEventListener('submit', async function (e) {
+            const form = e.target;
+            if (form.classList.contains('ajax-cart-form')) {
+                e.preventDefault();
+
+                const formData = new FormData(form);
+                const urlEncodedData = new URLSearchParams(formData);
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: form.method || 'POST',
+                        body: urlEncodedData,
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        redirect: 'follow'
+                    });
+
+                    if (response.ok) {
+                        alert("Đã thêm sản phẩm vào giỏ hàng thành công!");
+                    } else {
+                        alert("Có lỗi xảy ra, không thể thêm vào giỏ hàng.");
+                    }
+                } catch (error) {
+                    console.error("Lỗi:", error);
+                    alert("Có lỗi xảy ra, vui lòng thử lại.");
+                }
+            }
+        });
+    });
+</script>
+</body>
+
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Lịch sử đơn hàng - LapZone</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap"
+          rel="stylesheet" />
+    <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+            rel="stylesheet" />
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col">
+<div th:replace="~{fragments/header :: header}"></div>
+
+<!-- Main Content -->
+<main class="flex-1 w-full max-w-[96%] mx-auto px-4 md:px-margin-desktop py-8 md:py-12">
+    <div class="flex flex-col gap-8 w-full max-w-5xl mx-auto">
+        <!-- Order History Content -->
+        <section class="w-full space-y-6">
+            <h1 class="text-3xl font-extrabold text-gray-900 mb-6 uppercase tracking-wide">Lịch sử đơn hàng</h1>
+
+            <!-- No orders message -->
+            <div th:if="${#lists.isEmpty(orders)}"
+                 class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-12 text-center">
+                <div
+                        class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-surface-container-low mb-6 text-on-surface-variant">
+                    <span class="material-symbols-outlined text-5xl">inventory_2</span>
+                </div>
+                <h3 class="text-headline-md font-headline-md text-on-surface mb-2">Bạn chưa có đơn hàng nào</h3>
+                <p class="text-body-md font-body-md text-on-surface-variant mb-6">Cùng khám phá các sản phẩm công
+                    nghệ tuyệt vời tại LapZone nhé!</p>
+                <a href="/"
+                   class="inline-flex items-center justify-center px-6 py-3 bg-primary hover:bg-on-primary-fixed-variant text-on-primary font-label-md text-label-md rounded-lg transition-colors">
+                    Tiếp tục mua sắm
+                </a>
+            </div>
+
+            <!-- List of orders -->
+            <div th:unless="${#lists.isEmpty(orders)}" class="space-y-6">
+                <!-- Iterating over orders -->
+                <div th:each="order : ${orders}"
+                     class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant overflow-hidden">
+
+                    <!-- Order Header -->
+                    <div class="bg-surface-container-low px-6 py-4 border-b border-outline-variant flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <div class="text-label-md font-label-md text-on-surface-variant mb-1">Mã đơn hàng: <span
+                                    class="text-primary font-bold" th:text="${'#' + order.orderId}">#10024</span>
+                            </div>
+                            <div class="text-label-sm font-label-sm text-on-surface-variant"
+                                 th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">24/06/2026 14:30
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <!-- Trạng thái: Chờ thanh toán -->
+                            <span th:if="${order.status == 'PENDING_PAYMENT'}" class="px-3 py-1 bg-orange-100 text-orange-800 text-sm rounded-full font-bold inline-flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">payment</span> Chờ thanh toán
+                            </span>
+
+                            <!-- Trạng thái: Chờ xác nhận -->
+                            <span th:if="${order.status == 'PENDING'}" class="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm rounded-full font-bold inline-flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">schedule</span> Chờ xác nhận
+                            </span>
+
+                            <!-- Trạng thái: Đang giao (PROCESSING) -->
+                            <span th:if="${order.status == 'PROCESSING'}" class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-bold inline-flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">local_shipping</span> Đang xử lý
+                            </span>
+
+                            <!-- Trạng thái: Đang vận chuyển -->
+                            <span th:if="${order.status == 'SHIPPING'}" class="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full font-bold inline-flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">local_shipping</span> Đang vận chuyển
+                            </span>
+
+                            <!-- Trạng thái: Đã giao -->
+                            <span th:if="${order.status == 'DELIVERED'}" class="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full font-bold inline-flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">check_circle</span> Đã giao
+                            </span>
+
+                            <!-- Trạng thái: Đã hủy -->
+                            <span th:if="${order.status == 'CANCELLED'}" class="px-3 py-1 bg-red-100 text-red-800 text-sm rounded-full font-bold inline-flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">cancel</span> Đã hủy
+                            </span>                   </div>
+                    </div>
+
+                    <!-- Order Items -->
+                    <div class="p-6 space-y-4">
+                        <div th:each="detail : ${order.orderDetails}"
+                             class="flex flex-col sm:flex-row gap-4 border-b border-outline-variant pb-4 last:border-0 last:pb-0">
+                            <div
+                                    class="w-20 h-20 bg-surface rounded-lg p-2 flex-shrink-0 flex items-center justify-center border border-outline-variant">
+                                <img th:if="${detail.configurationVersion.laptop != null and detail.configurationVersion.laptop.imageUrl != null and !detail.configurationVersion.laptop.imageUrl.isEmpty()}" th:src="${detail.configurationVersion.laptop.imageUrl}" alt="Sản phẩm" class="object-contain max-w-full max-h-full" />
+                                <img th:unless="${detail.configurationVersion.laptop != null and detail.configurationVersion.laptop.imageUrl != null and !detail.configurationVersion.laptop.imageUrl.isEmpty()}" alt="Sản phẩm" class="object-contain max-w-full max-h-full"
+                                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNfgXG2VW3KuRQWjt275sT32q7JHz0Nsvm5HUO9_U9WCMo-XDPGLW9Cbj72ddo1riF9AJpoGAUKprUO2jUBwdx82ZmKImWh3Cxku6PgdWHfa8Gto8VysnPAaH7o7C-vC35TIYL-x0BakT9dtz3nHylD-7OIPMVKu27DIruMOf41uQSuG5LKa34EdS6AfvEplbd2K77UrqnlQzn5hiDwlg6PPzg8pWFeoA6Nqe4VxlH7ZO-1OOFmgiXiYiqs7gS5x-jy0KEIQC45dE" />
+                            </div>
+                            <div class="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <h4 class="text-body-md font-body-md text-on-surface font-semibold line-clamp-2"
+                                        th:text="${detail.configurationVersion.laptop != null ? detail.configurationVersion.laptop.laptopName + ' - ' + detail.configurationVersion.cpu + ', ' + detail.configurationVersion.ram + ', ' + detail.configurationVersion.storage : 'Sản phẩm ' + detail.configurationVersion.configurationVersionId}">
+                                        Laptop Dell XPS 15
+                                    </h4>
+                                    <div class="text-label-sm font-label-sm text-on-surface-variant mt-1"
+                                         th:text="'Số lượng: ' + ${detail.quantity}">Số lượng: 1</div>
+                                    <div th:if="${detail.isGift}"
+                                         class="text-label-sm font-label-sm text-tertiary-fixed-dim mt-1 flex items-center gap-1">
+                                            <span
+                                                    class="material-symbols-outlined text-[14px]">featured_seasonal_and_gifts</span>
+                                        Quà tặng kèm
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-body-md font-body-md text-on-surface font-bold"
+                                         th:text="${#numbers.formatDecimal(detail.price, 0, 'COMMA', 0, 'POINT') + ' ₫'}">
+                                        45.990.000 ₫
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Footer -->
+                    <div class="bg-surface px-6 py-4 border-t border-outline-variant flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-label-md font-label-md text-on-surface-variant">Tổng tiền:</span>
+                            <span class="text-headline-md font-headline-md text-primary font-bold"
+                                  th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + ' ₫'}">45.990.000
+                                    ₫</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <a th:href="@{/orderdetail/{id}(id=${order.orderId})}"
+                               class="px-4 py-2 border border-outline-variant text-on-surface hover:bg-surface-container-high font-label-md text-label-md rounded-lg transition-colors">
+                                Xem chi tiết
+                            </a>
+
+                            <!-- Form hủy đơn: Chỉ hiện thị khi trạng thái là PENDING hoặc PROCESSING -->
+                            <form th:if="${order.status == 'PENDING' or order.status == 'PENDING_PAYMENT' or order.status == 'PROCESSING'}"
+                                  th:action="@{/orders/{id}/cancel(id=${order.orderId})}"
+                                  method="post"
+                                  class="m-0">
+                                <button type="submit"
+                                        class="px-4 py-2 bg-red-500 text-white hover:bg-red-600 font-medium text-sm rounded-lg transition-colors"
+                                        onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');">
+                                    Hủy đơn
+                                </button>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </section>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-slate-900 text-gray-400 py-10 mt-auto">
+    <div class="max-w-[96%] w-full mx-auto px-4 flex flex-wrap justify-between items-center gap-6">
+        <div>
+            <div class="text-white font-extrabold text-xl mb-2 flex items-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                    <rect x="9" y="9" width="6" height="6"></rect>
+                    <line x1="9" y1="1" x2="9" y2="4"></line>
+                    <line x1="15" y1="1" x2="15" y2="4"></line>
+                    <line x1="9" y1="20" x2="9" y2="23"></line>
+                    <line x1="15" y1="20" x2="15" y2="23"></line>
+                    <line x1="20" y1="9" x2="23" y2="9"></line>
+                    <line x1="20" y1="14" x2="23" y2="14"></line>
+                    <line x1="1" y1="9" x2="4" y2="9"></line>
+                    <line x1="1" y1="14" x2="4" y2="14"></line>
+                </svg>
+                LapZone
+            </div>
+            <div class="text-[0.9rem]">&copy; 2024 LapZone Systems. All rights reserved. Precision Engineering for Professionals.</div>
+        </div>
+        <div class="flex gap-6 text-[0.9rem] font-medium">
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">Terms of Service</a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">Shipping Info</a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">Contact Support</a>
+        </div>
+    </div>
+</footer>
+</body>
+
+</html>
